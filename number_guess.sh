@@ -13,6 +13,13 @@ MAIIN_FUNCTION() {
   echo "Enter your name:"
   read USERNAME
 
+  n=${#USERNAME}
+
+  if [[ ! $n -le 22  ]] || [[ !$n -gt 0 ]]; then
+    read USERNAME
+  fi
+
+
   PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$USERNAME';")
 
   if [[ -z $PLAYER_ID ]]; then
