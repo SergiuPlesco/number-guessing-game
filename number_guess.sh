@@ -19,10 +19,10 @@ MAIIN_FUNCTION() {
     echo -e "\nWelcome, $NAME! It looks like this is your first time here."
     INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$NAME');")
   else
-    PLAYER=$($PSQL "SELECT player_id, player_name FROM players WHERE player_id = $PLAYER_ID")
-    echo $PLAYER | while IFS="|" read PLAYER_ID PLAYER_NAME
+    PLAYER=$($PSQL "SELECT player_id, player_name, MIN(guess_count) AS best_game FROM players JOIN games USING(player_id) WHERE player_id = $PLAYER_ID")
+    echo $PLAYER | while IFS="|" read PLAYER_ID PLAYER_NAME BEST_GAME
     do
-      echo -e "\nWelcome back, $PLAYER_NAME! You have played 0 games, and your best game took 0 guesses."
+      echo -e "\nWelcome back, $PLAYER_NAME! You have played 0 games, and your best game took $BEST_GAME guesses."
     done
     
   fi 
@@ -40,7 +40,7 @@ MAIIN_FUNCTION() {
       if (( NUMBER_FROM_USER == random_number )); then
         ((GUESS_COUNT++))
         echo -e "\nYou guessed it in $GUESS_COUNT tries. The secret number was $random_number. Nice job!"
-        
+        INSERT_GAME_RESULT=$($PSQL "INSERT INTO games(player_id, guess_count) VALUES($PLAYER_ID, $GUESS_COUNT)")
 
         break
       elif (( NUMBER_FROM_USER < random_number ));then
