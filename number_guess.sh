@@ -11,14 +11,14 @@ MAIIN_FUNCTION() {
   GUESS_COUNT=0
   
   echo "Enter your name:"
-  read NAME
+  read USERNAME
 
-  PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$NAME';")
+  PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$USERNAME';")
 
   if [[ -z $PLAYER_ID ]]; then
-    echo -e "\nWelcome, $NAME! It looks like this is your first time here."
-    INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$NAME');")
-    PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$NAME';")
+    echo -e "\nWelcome, $USERNAME! It looks like this is your first time here."
+    INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$USERNAME');")
+    PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$USERNAME';")
   else
     GAME=$($PSQL "SELECT p.player_id, p.player_name, COUNT(g.game_id) AS GAMES_PLAYED, MIN(g.guess_count) AS best_game FROM players p JOIN games g USING(player_id) WHERE g.player_id = $PLAYER_ID GROUP BY p.player_id, p.player_name")
     IFS="|" read PLAYER_ID PLAYER_NAME GAMES_PLAYED BEST_GAME <<< "$GAME"
