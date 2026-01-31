@@ -17,6 +17,7 @@ MAIIN_FUNCTION() {
 
   if [[ -z $PLAYER_ID ]]; then
     echo -e "\nWelcome, $NAME! It looks like this is your first time here."
+    INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$NAME');")
   else
     PLAYER=$($PSQL "SELECT player_id, player_name FROM players WHERE player_id = $PLAYER_ID")
     echo $PLAYER | while IFS="|" read PLAYER_ID PLAYER_NAME
@@ -32,12 +33,15 @@ MAIIN_FUNCTION() {
     read NUMBER_FROM_USER
     if [[ ! $NUMBER_FROM_USER =~ ^[0-9]+$ ]]; then
       echo -e "\nThat is not an integer, guess again:"
+      # don't count if input not integer?
       ((GUESS_COUNT++))
       continue
     else
       if (( NUMBER_FROM_USER == random_number )); then
         ((GUESS_COUNT++))
         echo -e "\nYou guessed it in $GUESS_COUNT tries. The secret number was $random_number. Nice job!"
+        
+
         break
       elif (( NUMBER_FROM_USER < random_number ));then
         ((GUESS_COUNT++))
