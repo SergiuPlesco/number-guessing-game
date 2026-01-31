@@ -12,20 +12,20 @@ MAIIN_FUNCTION() {
   
   while true; do
     echo "Enter your name:"
-    read -r USERNAME
-    if (( ${#USERNAME} > 0 && ${#USERNAME} <=22 )); then
+    read -r NAME
+    if (( ${#NAME} > 0 && ${#NAME} <=22 )); then
       break
     else
       echo "Username bust be 1-22 characters."
     fi
   done
  
-  PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$USERNAME';")
+  USERNAME=$($PSQL "SELECT player_id FROM players WHERE player_name = '$NAME';")
 
-  if [[ -z $PLAYER_ID ]]; then
-    echo -e "\nWelcome, $USERNAME! It looks like this is your first time here."
-    INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$USERNAME');")
-    PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$USERNAME';")
+  if [[ -z $USERNAME ]]; then
+    echo -e "\nWelcome, $NAME! It looks like this is your first time here."
+    INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$NAME');")
+    PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$NAME';")
   else
     GAME=$($PSQL "SELECT p.player_id, p.player_name, COUNT(g.game_id) AS GAMES_PLAYED, MIN(g.guess_count) AS best_game FROM players p LEFT JOIN games g USING(player_id) WHERE g.player_id = $PLAYER_ID GROUP BY p.player_id, p.player_name")
     IFS="|" read PLAYER_ID PLAYER_NAME GAMES_PLAYED BEST_GAME <<< "$GAME"
