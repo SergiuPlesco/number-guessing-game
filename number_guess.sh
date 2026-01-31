@@ -13,21 +13,21 @@ MAIIN_FUNCTION() {
   echo -e "\nEnter your name:"
   read NAME
 
-  read USERNAME, GAMES_PLAYED, BEST_GAME <<< $($PSQL "SELECT username, games_played, best_game FROM number_guessing WHERE username = '$NAME';")
+  PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE name = '$NAME';")
 
-  if [[ -z $USERNAME ]]; then
+  if [[ -z $PLAYER_ID ]]; then
     echo -e "\nWelcome, $NAME! It looks like this is your first time here."
   else
-    echo -e "\nWelcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
+    PLAYER=$($PSQL "SELECT player_id, player_name FROM players WHERE player_id = $PLAYER_ID")
+    echo $PLAYER | while IFS="|" read PLAYER_ID PLAYER_NAME
+    do
+      echo -e "\nWelcome back, $PLAYER_NAME! You have played 0 games, and your best game took 0 guesses."
+    done
+    
   fi 
 
-  # INSERT_NEW_USER=$($PSQL "INSERT INTO number_guessing(username, games_played) VALUES('$NAME', 1)")
-    
-   
   echo -e "\nGuess the secret number between 1 and 1000:"
-      
-      
-
+        
   while true; do
     read NUMBER_FROM_USER
     if [[ ! $NUMBER_FROM_USER =~ ^[0-9]+$ ]]; then
