@@ -3,7 +3,7 @@
 PSQL="psql -X --username=freecodecamp --dbname=number_guess -t --no-align -c"
 
 random_number=$(( $RANDOM % 1000 + 1 ))
-echo $random_number
+# echo $random_number
 # shuffled_num=$(shuf -i 1-1000 -n 1)
 # echo $shuffled_num
 
