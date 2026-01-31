@@ -13,16 +13,16 @@ MAIIN_FUNCTION() {
   echo -e "\nEnter your name:"
   read NAME
 
-  PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE name = '$NAME';")
+  PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$NAME';")
 
   if [[ -z $PLAYER_ID ]]; then
     echo -e "\nWelcome, $NAME! It looks like this is your first time here."
     INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$NAME');")
   else
-    PLAYER=$($PSQL "SELECT player_id, player_name, MIN(guess_count) AS best_game FROM players JOIN games USING(player_id) WHERE player_id = $PLAYER_ID")
-    echo $PLAYER | while IFS="|" read PLAYER_ID PLAYER_NAME BEST_GAME
+    PLAYER=$($PSQL "SELECT p.player_id, p.player_name, COUNT(g.game_id) AS GAMES_PLAYED, MIN(g.guess_count) AS best_game FROM players p JOIN games g USING(player_id) WHERE g.player_id = $PLAYER_ID GROUP BY p.player_id, p.player_name")
+    echo $PLAYER | while IFS="|" read PLAYER_ID PLAYER_NAME GAMES_PLAYED BEST_GAME
     do
-      echo -e "\nWelcome back, $PLAYER_NAME! You have played 0 games, and your best game took $BEST_GAME guesses."
+      echo -e "\nWelcome back, $PLAYER_NAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
     done
     
   fi 
@@ -32,27 +32,25 @@ MAIIN_FUNCTION() {
   while true; do
     read NUMBER_FROM_USER
     if [[ ! $NUMBER_FROM_USER =~ ^[0-9]+$ ]]; then
-      echo -e "\nThat is not an integer, guess again:"
-      # don't count if input not integer?
-      ((GUESS_COUNT++))
+      echo -e "\nThat is not an integer, guess again:"   
       continue
-    else
+    fi
+    
+     ((GUESS_COUNT++))
+
       if (( NUMBER_FROM_USER == random_number )); then
-        ((GUESS_COUNT++))
         echo -e "\nYou guessed it in $GUESS_COUNT tries. The secret number was $random_number. Nice job!"
+
+        PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$NAME';")
         INSERT_GAME_RESULT=$($PSQL "INSERT INTO games(player_id, guess_count) VALUES($PLAYER_ID, $GUESS_COUNT)")
 
         break
       elif (( NUMBER_FROM_USER < random_number ));then
-        ((GUESS_COUNT++))
         echo -e "\nIt's higher than that, guess again:"
-        continue
       elif (( NUMBER_FROM_USER > random_number ));then
-        ((GUESS_COUNT++))
         echo -e "\nIt's lower than that, guess again:"
-        continue
       fi
-    fi
+    
   done
 }
 
