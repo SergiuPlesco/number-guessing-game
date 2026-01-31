@@ -10,16 +10,16 @@ random_number=$(( $RANDOM % 1000 + 1 ))
 MAIIN_FUNCTION() {
   GUESS_COUNT=0
   
-  echo "Enter your name:"
-  read USERNAME
-
-  n=${#USERNAME}
-
-  if [[ ! $n -le 22  ]] || [[ !$n -gt 0 ]]; then
-    read USERNAME
-  fi
-
-
+  while true; do
+    echo "Enter your name:"
+    read -r USERNAME
+    if (( ${#USERNAME} > 0 && ${#USERNAME} <=22 )); then
+      break
+    else
+      echo "Username bust be 1-22 characters."
+    fi
+  done
+ 
   PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$USERNAME';")
 
   if [[ -z $PLAYER_ID ]]; then
@@ -27,7 +27,7 @@ MAIIN_FUNCTION() {
     INSERT_NEW_PLAYER=$($PSQL "INSERT INTO players(player_name) VALUES('$USERNAME');")
     PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$USERNAME';")
   else
-    GAME=$($PSQL "SELECT p.player_id, p.player_name, COUNT(g.game_id) AS GAMES_PLAYED, MIN(g.guess_count) AS best_game FROM players p JOIN games g USING(player_id) WHERE g.player_id = $PLAYER_ID GROUP BY p.player_id, p.player_name")
+    GAME=$($PSQL "SELECT p.player_id, p.player_name, COUNT(g.game_id) AS GAMES_PLAYED, MIN(g.guess_count) AS best_game FROM players p LEFT JOIN games g USING(player_id) WHERE g.player_id = $PLAYER_ID GROUP BY p.player_id, p.player_name")
     IFS="|" read PLAYER_ID PLAYER_NAME GAMES_PLAYED BEST_GAME <<< "$GAME"
  
     echo -e "\nWelcome back, $PLAYER_NAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."    
