@@ -10,7 +10,7 @@ echo $random_number
 MAIIN_FUNCTION() {
   GUESS_COUNT=0
   
-  echo -e "\nEnter your name:"
+  echo "Enter your name:"
   read NAME
 
   PLAYER_ID=$($PSQL "SELECT player_id FROM players WHERE player_name = '$NAME';")
